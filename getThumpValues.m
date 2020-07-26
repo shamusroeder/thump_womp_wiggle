@@ -2,16 +2,7 @@ function [thump_values, thump_times] = getThumpValues(seat_vert_accel, times_or_
 %GETTHUMPVALUES Summary of this function goes here
 %   Detailed explanation goes here
 
-BINNED_WINDOW_DURATION = 0.1; % this is the duration of the window for our 
-    % binned thump metric in seconds, set to 0.1 seconds to capture the 
-    % quartersine wave of a 2.5 Hz signal
 
-FADE_LIMIT_DURATION = 5.0; % seconds until 99% of a given prior thump's 
-    % effect is gone, which we will treat as the point it disappears
-    
-HISTORY_ADJUSTED_THUMP_VALUE_COEFFICIENT = sqrt(2); % admittedly an 
-    % arbitrary value at this time, something potentially worth improving
-    % upon in the future
     
 user_provided_fs = isscalar(times_or_fs);
 
