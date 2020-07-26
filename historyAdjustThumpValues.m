@@ -20,19 +20,20 @@ HISTORY_ADJUSTED_THUMP_VALUE_COEFFICIENT = sqrt(2); % admittedly an
 
 decay_time_constant = -log(0.01) / FADE_LIMIT_DURATION;
     
-fade_limit_length = round(FADE_LIMIT_DURATION/BINNED_WINDOW_DURATION);
+fade_limit_length = round(FADE_LIMIT_DURATION / BINNED_WINDOW_DURATION);
 
 hatv = zeros(size(thump_times)); % preallocate array
 
 for i=(fade_limit_length+1):length(thump_times)
-    target_preceding_range_idx = (i - fade_limit_length):(i-1);
+    target_preceding_range_idx = (i-fade_limit_length):(i-1);
     
     % get an array of all relevant preceding thump values for adjustment
-    preceding_thump_values = thump_values(target_range_idx); 
+    preceding_thump_values = thump_values(target_preceding_range_idx); 
     
     % negative array of time elapsed since each relevant preceding thump 
     % value
-    preceding_thump_times = thump_times(target_range_idx) - thump_times(i); 
+    preceding_thump_times = thump_times(target_preceding_range_idx) ...
+                                - thump_times(i); 
     
     history_adjustment = dot(exp(preceding_thump_times ...
                                         * decay_time_constant), ...

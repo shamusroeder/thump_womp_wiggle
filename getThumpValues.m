@@ -25,10 +25,10 @@ binned_window_length    = round(BINNED_WINDOW_DURATION * fs); % the actual
 final_analysis_idx = length(seat_vert_accel) - mod(length(seat_vert_accel), ...
                                                     binned_window_length);
 
-number_of_bins = (final_analysis_idx / binned_window_length);
+number_of_bins  = (final_analysis_idx / binned_window_length);
 
-thump_values = zeros([number_of_bins, 1]); % preallocate array
-thump_times = zeros([number_of_bins, 1]); % preallocate array
+thump_values    = zeros([number_of_bins, 1]); % preallocate array
+thump_times     = zeros([number_of_bins, 1]); % preallocate array
 
 for i = 1:number_of_bins
     target_bin_idx  = ((1+(i-1)*binned_window_length)...
