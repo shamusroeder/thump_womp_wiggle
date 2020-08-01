@@ -6,11 +6,15 @@ function out = accelerationWeighting(seat_vert_accel, times_or_fs)
 %   The documentation, structure, and level of optimizatation are not at
 %   the level I'd like, but they are sufficient for now. 
 
-if nargin == 1
-    q = seat_vert_accel;
+size_of_first_argin = size(seat_vert_accel);
+
+if nargin == 1 && size_of_first_argin(2) == 2 % in case they were bundled 
+    q = seat_vert_accel;                        % together
 elseif nargin == 2
     [times, ~] = interpretTimesOrFs(times_or_fs);
     q = [times, seat_vert_accel];
+else
+    error("accelerationWeighting requires both acceleration and time data");
 end
 
 [t,f,dt,sr,tmx,tmi,~,ncontinue]=enter_time_history(q);
