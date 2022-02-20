@@ -1,6 +1,33 @@
 function [hatv, impact_bool_idx] = historyAdjustThumpValues(thump_values, thump_times)
-%HISTORYADJUSTTHUMPVALUES Summary of this function goes here
-%   Detailed explanation goes here
+%HISTORYADJUSTTHUMPVALUES Get impact events from thump values
+% Given an array of thump values (of length n) and times (of length n), 
+% return a list of history adjusted thump values (HATVs) and a boolean 
+% array (of length n) describing indices where impacts are labelled to have 
+% occurred.
+% 
+% USAGE: [hatv, impact_bool_idx] = historyAdjustThumpValues(thump_values, thump_times)
+%   
+% OUTPUT
+%   hatv: the History Adjusted Thump Values (HATV) from the thump_values.
+%       Array of length <= n and units in (m^4/s^-7).
+%   impact_bool_idx: A boolean array of length <= n describing the location
+%       of impacts within the thump_values/thump_times. 0 corresponds to no
+%       impact and 1 corresponds to the presence of an impact.
+%
+% INPUT
+%   seat_vert_accel: Array of length n containing the vertical acceleration 
+%       at the seat interface. Units in (m/s^2). Only used to ensure the
+%       correct length of the times output if times_or_fs is a scalar
+%       (sampling rate).
+%   times_or_fs: Array of length n OR scalar. If an array of length n,
+%       timeseries corresponding to the measures of seat_vert_accel in
+%       units of seconds. If a scalar, then represents the consistent 
+%       sampling rate at which data is collected at in units of Hz. If
+%       array is entered and the difference between samples are not
+%       perfectly consistent, the interpretTimesOrFs function will end up
+%       resampling at the median sampling rate. These functions assume a
+%       perfectly consistent sampling rate.
+%
 
 BINNED_WINDOW_DURATION = 0.1; % this is the duration of the window for our 
     % binned thump metric in seconds, set to 0.1 seconds to capture the 
@@ -51,4 +78,3 @@ hatv(:) = 0;
 hatv(locs) = pks;
 impact_bool_idx = hatv > 0;
 end
-

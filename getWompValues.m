@@ -1,14 +1,43 @@
 function [womp_values, womp_times, jerk_comparison, jerk_impact_values, impact_bool_idx] = getWompValues(seat_vert_accel, times_or_fs)
-%GETWOMPVALUES Summary of this function goes here
-%   Detailed explanation goes here
-
-%given what are essentially jerkbool regions, take in those values for the
-%entire dataset, then outputs the locations for the beginning and ending of
-%these regions. We will also assume some natural decay for these regions with a
-%halflife equal to 1/2 the rise time when the summated value is no longer rising, and straight to zero once the value
-%dips below 10%. This is to ensure that we don't have a briefly interrupted
-%impact be considered two different impacts.
-%regions in question and create
+%GETWOMPVALUES Get all womp info from accel timeseries
+% Given vertical acceleration (in terms of m/s^2) at the seat and the times
+% or sampling rate that acceleration was collected, return all impact, 
+% womp values, and times in seconds to which they correspond.
+%
+% USAGE: [womp_values, womp_times, jerk_comparison, jerk_impact_values, impact_bool_idx] = getWompValues(seat_vert_accel, times_or_fs)
+%   
+% OUTPUT
+%   womp_values: Array of length n containing womp values. Units in 
+%       (m/s^2). This array will be equal in length to the number of
+%       impacts.
+%   womp_times: Array of length n containing the times to which they
+%       correspond. Units in seconds. If times_or_fs is input as a vector 
+%       of length m of times in seconds, then thump_times will return an
+%       array of times in seconds with the same starting time. If 
+%       times_of_fs is input as a scaler (the sampling rate), then 
+%       thump_times will start at 0 and be relative to the first sample. 
+%       (If [100, 100.01, 100.02...] is input for times_or_fs, thump_times 
+%       will start at 100. If a sampling rate is input, womp_times will 
+%       start at 0.)
+%   jerk_comparison: Array of length m. If the jerk expectaition is
+%       exceeded, returns how much the jerk is exceeded by. Otherwise,
+%       returns 0.
+%   jerk_impact_values: The value of the jerk wherever there is an impact.
+%   impact_bool_idx: A boolean array of length <= m describing the location
+%       of impacts within the thump_values/thump_times. 0 corresponds to no
+%       impact and 1 corresponds to the presence of an impact.
+% 
+% INPUT
+%   seat_vert_accel: Array of length m containing the vertical acceleration 
+%       at the seat interface. Units in (m/s^2). 
+%   times_or_fs: Array of length m OR scalar. If an array of length m,
+%       timeseries corresponding to the measures of seat_vert_accel in
+%       units of seconds. If a scalar, then represents the consistent 
+%       sampling rate at which data is collected at in units of Hz. If
+%       array is entered and the difference between samples are not
+%       perfectly consistent, the interpretTimesOrFs function will end up
+%       resampling at the median sampling rate. These functions assume a
+%       perfectly consistent sampling rate.
 
 ECHO_DURATION_SHORT = 1.0;  % ECHO_DURATION_SHORT describes the timespan  
                             % over which an individual would generate an 
@@ -123,7 +152,7 @@ jerk_comparison(1 : delay_bin + echo_bin) = 0;  % make the first part of the
 %comparison
 %set up natural decay calculations
 i = 1; % iterator for the jerk_compare vector
-k = 0; %iterator for impact s
+k = 0; % iterator for impact s
 
 % we make a struct for readability, could just as easily be a table or
 % matrix
