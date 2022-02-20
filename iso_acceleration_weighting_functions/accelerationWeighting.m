@@ -11,7 +11,7 @@ size_of_first_argin = size(seat_vert_accel);
 if nargin == 1 && size_of_first_argin(2) == 2 % in case they were bundled 
     q = seat_vert_accel;                        % together
 elseif nargin == 2
-    [times, ~] = interpretTimesOrFs(times_or_fs);
+    [times, ~] = interpretTimesOrFs(seat_vert_accel, times_or_fs);
     q = [times, seat_vert_accel];
 else
     error("accelerationWeighting requires both acceleration and time data");

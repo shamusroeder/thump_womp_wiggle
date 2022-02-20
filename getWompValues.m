@@ -19,7 +19,7 @@ function [womp_values, womp_times, jerk_comparison, jerk_impact_values, impact_b
 %       (If [100, 100.01, 100.02...] is input for times_or_fs, thump_times 
 %       will start at 100. If a sampling rate is input, womp_times will 
 %       start at 0.)
-%   jerk_comparison: Array of length m. If the jerk expectaition is
+%   jerk_comparison: Array of length (m - 1). If the jerk expectation is
 %       exceeded, returns how much the jerk is exceeded by. Otherwise,
 %       returns 0.
 %   jerk_impact_values: The value of the jerk wherever there is an impact.
@@ -163,11 +163,11 @@ s = struct('start_loci',{},...  % where the impact started
             'max_value',{});    % what the maximum jerk value was
 
 % I could have made this more efficient, but it is what it is
-
-while i<length(jerk_compare) % we iterate through all the points in the data
+%{
+while i<length(jerk_comparison) % we iterate through all the points in the data
     target_region = jerk_comparison(i : min(i + min_womp_bin - 1, ...
-                                            length(jerk_compare)));
-    if all(target_region) && length(target_region) > min_womp_bin % if the short target region is sustained enough
+                                            length(jerk_comparison)));
+    if all(target_region) && (length(target_region) > min_womp_bin) % if the short target region is sustained enough
         k = k + 1;
         s(k).start_loci = i;
         s(k).endloci = 0;
@@ -175,9 +175,9 @@ while i<length(jerk_compare) % we iterate through all the points in the data
         % first, we find the end of the impact region, which will be
         % between the end of the min_womp_bin and the max_womp_bin bounds
         while ((jerk_comparison(i) > 0 || (i-s(k).start_loci) < max_womp_bin)...
-                && (i < length(jerk_compare)))
-            if jerkcompare(i) == 0
-                if jerkcompare(i-1 > 0)
+                && (i < length(jerk_comparison)))
+            if jerk_comparison(i) == 0
+                if jerk_comparison(i-1 > 0)
                     s(k).end_loci = i - 1;
                 end           
             end
@@ -198,9 +198,47 @@ while i<length(jerk_compare) % we iterate through all the points in the data
     end
 
 end
-impact_bool_idx = s.max_loci;                                        
-womp_values = s.total_mag; 
-womp_times = time_expect(impact_bool_idx);
-jerk_impact_values = s.max_value;
+%}
+while i < length(jerk_comparison)
+    if all(jerk_comparison(i:min(i+min_womp_bin-1, length(jerk_comparison))))
+        k = k+1;
+        s(k).start_loci = i;
+        transient_measure = 0;
+        mag = 0;
+        s(k).end_loci=0;
+        while (jerk_comparison(i)>0||transient_measure==0)&&(i < length(jerk_comparison))
+            mag = mag + (jerk_comparison(i-1)+jerk_comparison(i))*(time_expect(i)-time_expect(i-1))/2; %ongoing trapezoidal integration
+            if jerk_comparison(i)==0
+                transient_measure=(i-s(k).start_loci>max_womp_bin);
+                if jerk_comparison(i-1)>0
+                    s(k).end_loci=i-1;
+                end           
+            end
+            i=i+1;
+        end
+        if s(k).end_loci==0&&i==length(jerk_comparison)
+            s(k).end_loci=i;
+        end
+        [~,s(k).max_loci]=max(jerk_comparison(s(k).start_loci:s(k).end_loci));
+        s(k).max_loci=s(k).max_loci+s(k).start_loci-1;
+        s(k).max_value=jerk(s(k).max_loci);
+        s(k).total_mag=mag;
+    else
+        i=i+1;
+    end
+end
+impact_bool_idx = logical(zeros(size(seat_vert_accel)));
+
+if isempty(s)
+    womp_values = [];
+    womp_times = [];
+    jerk_impact_values = [];
+
+else
+    impact_bool_idx([s.max_loci]) = 1;
+
+    womp_values = [s.total_mag]; 
+    womp_times = time_expect(impact_bool_idx);
+    jerk_impact_values = [s.max_value];
 end
 

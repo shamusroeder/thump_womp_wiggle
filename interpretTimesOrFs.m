@@ -31,7 +31,7 @@ function [times, fs] = interpretTimesOrFs(seat_vert_accel, times_or_fs)
 user_provided_fs = isscalar(times_or_fs);
 
 if user_provided_fs
-    times   = (0:length(seat_vert_accel) - 1) ./ times_or_fs;
+    times   = (0:(length(seat_vert_accel) - 1)) ./ times_or_fs;
     fs      = times_or_fs;
 else
     times   = times_or_fs;
